@@ -59,6 +59,10 @@ Default values set when only the mode is specified.
 ## Packages
 
 - https://github.com/MrSaints/go-ghostscript
+- qpdf
+  ```
+  qpdf --object-streams=generate --stream-data=compress small.pdf small-v2.pdf
+  ```
 
 ## Notes
 
