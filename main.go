@@ -8,6 +8,8 @@ import (
 	gsEntities "tinypdf/vendors/gs/entities"
 	gs "tinypdf/vendors/gs/service"
 	qpdf "tinypdf/vendors/qpdf/service"
+
+	"github.com/dustin/go-humanize"
 )
 
 func usage() {
@@ -40,10 +42,27 @@ func mapToAllRanges(percent float64, ranges ...[2]float64) []int {
 	return result
 }
 
-func printFileSizeReport(originalSize, outputSize string) {
+func printFileSizeReport(originalBytes, outputBytes int64) {
 	fmt.Println()
-	fmt.Printf("Original:   %s\n", originalSize)
-	fmt.Printf("Compressed: %s\n", outputSize)
+	fmt.Printf("Original:   %s\n", humanize.Bytes(uint64(originalBytes)))
+	fmt.Printf("Compressed: %s\n", humanize.Bytes(uint64(outputBytes)))
+
+	if originalBytes > 0 {
+		reduction := originalBytes - outputBytes
+		reductionPercent := float64(reduction) / float64(originalBytes) * 100
+
+		if reduction > 0 {
+			fmt.Printf("Reduced by: %s (%.1f%%)\n",
+				humanize.Bytes(uint64(reduction)),
+				reductionPercent)
+		} else if reduction < 0 {
+			fmt.Printf("Increased by: %s (%.1f%%)\n",
+				humanize.Bytes(uint64(-reduction)),
+				-reductionPercent)
+		} else {
+			fmt.Println("No size change")
+		}
+	}
 }
 
 func main() {
@@ -77,7 +96,7 @@ func main() {
 		fmt.Printf("Error: Input file '%s' does not exist.\n", *inputPath)
 		os.Exit(1)
 	}
-	inputFileSize := shared.FileSize(*inputPath)
+	inputFileSizeBytes := shared.FileSizeBytes(*inputPath)
 
 	*quality = clamp(*quality, 10, 90)
 
@@ -105,5 +124,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	printFileSizeReport(inputFileSize, shared.FileSize(fmt.Sprintf("tinypdf-%s", *outputPath)))
+	outputFilePath := fmt.Sprintf("tinypdf-%s", *outputPath)
+	outputFileSizeBytes := shared.FileSizeBytes(outputFilePath)
+
+	printFileSizeReport(inputFileSizeBytes, outputFileSizeBytes)
 }

@@ -3,16 +3,14 @@ package shared
 import (
 	"os"
 	"os/exec"
-
-	"github.com/dustin/go-humanize"
 )
 
-func FileSize(path string) string {
+func FileSizeBytes(path string) int64 {
 	info, err := os.Stat(path)
 	if err != nil || info.Size() < 0 {
-		return "0 B"
+		return 0
 	}
-	return humanize.Bytes(uint64(info.Size()))
+	return info.Size()
 }
 
 func FileExists(path string) bool {
