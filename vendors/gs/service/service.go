@@ -19,7 +19,6 @@ type service struct{}
 func New() Service {
 	if !shared.IsBinaryAvailable("gs") {
 		fmt.Println("Error: Ghostscript (gs) is not installed or not found in PATH.")
-		fmt.Println("Please install Ghostscript to use this tool.")
 		os.Exit(1)
 	}
 	return &service{}

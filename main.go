@@ -5,14 +5,17 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"tinypdf/entities"
 	"tinypdf/shared"
 	gsEntities "tinypdf/vendors/gs/entities"
 	gs "tinypdf/vendors/gs/service"
+	pdftocairo "tinypdf/vendors/pdftocairo/service"
 	qpdf "tinypdf/vendors/qpdf/service"
 
 	"github.com/dustin/go-humanize"
 )
 
+// ASCII is "miniwi"
 func usage() {
 	fmt.Println(`
 
@@ -29,26 +32,6 @@ Example: tinypdf -i input.pdf -preset ebook -quality 60
 Options:
   -preset         One of: screen, ebook, printer, prepress (default: screen)
   -quality        Quality percentage between 10 and 90 (default: 50)`)
-}
-
-func clamp(val, min, max float64) float64 {
-	if val < min {
-		return min
-	}
-	if val > max {
-		return max
-	}
-	return val
-}
-
-func mapToAllRanges(percent float64, ranges ...[2]float64) []int {
-	result := make([]int, len(ranges))
-	for i, r := range ranges {
-		diff := r[1] - r[0]
-		val := r[0] + (percent/100.0)*diff
-		result[i] = int(val)
-	}
-	return result
 }
 
 func printFileSizeReport(originalBytes, outputBytes int64) {
@@ -78,6 +61,7 @@ func printFileSizeReport(originalBytes, outputBytes int64) {
 func main() {
 	gsService := gs.New()
 	qpdfService := qpdf.New()
+	pdftocairoService := pdftocairo.New()
 
 	inputPath := flag.String("i", "", "Path to input PDF")
 	preset := flag.String("preset", "screen", "Compression preset: screen, ebook, printer, prepress")
@@ -97,9 +81,19 @@ func main() {
 	}
 	inputFileSizeBytes := shared.FileSizeBytes(*inputPath)
 
-	*quality = clamp(*quality, 10, 90)
+	*quality = shared.Clamp(*quality, 10, 90)
 
-	resolutions := mapToAllRanges(*quality, [2]float64{0, 300}, [2]float64{0, 1200}, [2]float64{0, 300})
+	res, ok := entities.DefaultResolutionLimits[*preset]
+	if !ok {
+		os.Exit(1)
+	}
+
+	resolutions := shared.MapToRanges(
+		*quality,
+		[2]float64{res.ColorImageMin, res.ColorImageMax},
+		[2]float64{res.MonoImageMin, res.MonoImageMax},
+		[2]float64{res.GrayImageMin, res.GrayImageMax},
+	)
 	colorRes, monoRes, grayRes := resolutions[0], resolutions[1], resolutions[2]
 
 	// Create temp files for intermediary steps
@@ -119,7 +113,21 @@ func main() {
 	defer os.Remove(qpdfTmpFile.Name())
 	qpdfTmpFile.Close()
 
-	err = gsService.GenerateGSCommand(*inputPath, gsTmpFile.Name(), &gsEntities.Config{
+	pdftocairoTmpFile, err := os.CreateTemp("", "tinypdf-pdftocairo-*.pdf")
+	if err != nil {
+		fmt.Println("Error creating temp file for pdftocairo output:", err)
+		os.Exit(1)
+	}
+	defer os.Remove(pdftocairoTmpFile.Name())
+	pdftocairoTmpFile.Close()
+
+	err = pdftocairoService.GeneratePdftocairoCommand(*inputPath, pdftocairoTmpFile.Name()).Run()
+	if err != nil {
+		fmt.Println("Error running pdftocairo command:", err)
+		os.Exit(1)
+	}
+
+	err = gsService.GenerateGSCommand(pdftocairoTmpFile.Name(), gsTmpFile.Name(), &gsEntities.Config{
 		Preset:               *preset,
 		ColorImageResolution: colorRes,
 		MonoImageResolution:  monoRes,

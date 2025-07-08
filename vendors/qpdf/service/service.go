@@ -18,7 +18,6 @@ type service struct {
 func New() Service {
 	if !shared.IsBinaryAvailable("qpdf") {
 		fmt.Println("Error: QPDF is not installed or not found in PATH.")
-		fmt.Println("Please install QPDF to use this tool.")
 		os.Exit(1)
 	}
 	return &service{}
