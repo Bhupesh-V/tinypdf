@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"tinypdf/shared"
 	gsEntities "tinypdf/vendors/gs/entities"
@@ -13,11 +14,19 @@ import (
 )
 
 func usage() {
-	fmt.Println(`Usage: pdftrim -in input.pdf -out output.pdf [-preset screen|ebook|printer|prepress] [-quality 50]
+	fmt.Println(`
 
-Example: pdftrim -in input.pdf -out output.pdf -preset ebook -quality 75
+▗ ▘       ▌▐▘
+▜▘▌▛▌▌▌▛▌▛▌▜▘
+▐▖▌▌▌▙▌▙▌▙▌▐
+     ▄▌▌
 
-Trim Options:
+
+Usage: tinypdf -i input.pdf [-preset screen|ebook|printer|prepress] [-quality 50]
+
+Example: tinypdf -i input.pdf -preset ebook -quality 60
+
+Options:
   -preset         One of: screen, ebook, printer, prepress (default: screen)
   -quality        Quality percentage between 10 and 90 (default: 50)`)
 }
@@ -56,6 +65,7 @@ func printFileSizeReport(originalBytes, outputBytes int64) {
 				humanize.Bytes(uint64(reduction)),
 				reductionPercent)
 		} else if reduction < 0 {
+			// Bruh
 			fmt.Printf("Increased by: %s (%.1f%%)\n",
 				humanize.Bytes(uint64(-reduction)),
 				-reductionPercent)
@@ -66,28 +76,17 @@ func printFileSizeReport(originalBytes, outputBytes int64) {
 }
 
 func main() {
+	gsService := gs.New()
+	qpdfService := qpdf.New()
+
 	inputPath := flag.String("i", "", "Path to input PDF")
-	outputPath := flag.String("o", "", "Path to output PDF")
 	preset := flag.String("preset", "screen", "Compression preset: screen, ebook, printer, prepress")
 	quality := flag.Float64("quality", 50, "Quality percent (10-90)")
 
 	flag.Usage = usage
 	flag.Parse()
 
-	if !shared.IsBinaryAvailable("gs") {
-		fmt.Println("Error: Ghostscript (gs) is not installed or not found in PATH.")
-		fmt.Println("Please install Ghostscript to use this tool.")
-		os.Exit(1)
-	}
-
-	if !shared.IsBinaryAvailable("qpdf") {
-		fmt.Println("Error: QPDF is not installed or not found in PATH.")
-		fmt.Println("Please install QPDF to use this tool.")
-		os.Exit(1)
-	}
-
-	if *inputPath == "" || *outputPath == "" {
-		fmt.Println("Error: -in and -out are required.")
+	if *inputPath == "" {
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -103,29 +102,63 @@ func main() {
 	resolutions := mapToAllRanges(*quality, [2]float64{0, 300}, [2]float64{0, 1200}, [2]float64{0, 300})
 	colorRes, monoRes, grayRes := resolutions[0], resolutions[1], resolutions[2]
 
-	gsService := gs.New()
-	gsCmd, _ := gsService.GenerateGSCommand(*inputPath, *outputPath, &gsEntities.Config{
+	// Create temp files for intermediary steps
+	gsTmpFile, err := os.CreateTemp("", "tinypdf-gs-*.pdf")
+	if err != nil {
+		fmt.Println("Error creating temp file for Ghostscript output:", err)
+		os.Exit(1)
+	}
+	defer os.Remove(gsTmpFile.Name())
+	gsTmpFile.Close()
+
+	qpdfTmpFile, err := os.CreateTemp("", "tinypdf-qpdf-*.pdf")
+	if err != nil {
+		fmt.Println("Error creating temp file for QPDF output:", err)
+		os.Exit(1)
+	}
+	defer os.Remove(qpdfTmpFile.Name())
+	qpdfTmpFile.Close()
+
+	err = gsService.GenerateGSCommand(*inputPath, gsTmpFile.Name(), &gsEntities.Config{
 		Preset:               *preset,
 		ColorImageResolution: colorRes,
 		MonoImageResolution:  monoRes,
 		GrayImageResolution:  grayRes,
-	})
-	err := gsCmd.Run()
+	}).Run()
 	if err != nil {
-		fmt.Println("Error executing Ghostscript:", err)
 		os.Exit(1)
 	}
 
-	qpdfService := qpdf.New()
-	qpdfCmd, _ := qpdfService.GenerateQpdfCommand(*outputPath, fmt.Sprintf("tinypdf-%s", *outputPath))
-	err = qpdfCmd.Run()
+	err = qpdfService.GenerateQpdfCommand(gsTmpFile.Name(), qpdfTmpFile.Name()).Run()
 	if err != nil {
-		fmt.Println("Error executing QPDF:", err)
 		os.Exit(1)
 	}
 
-	outputFilePath := fmt.Sprintf("tinypdf-%s", *outputPath)
-	outputFileSizeBytes := shared.FileSizeBytes(outputFilePath)
+	// Move final file to user's directory with correct name
+	finalOutputFile := fmt.Sprintf("tinypdf-%s", *inputPath)
+	err = os.Rename(qpdfTmpFile.Name(), finalOutputFile)
+	if err != nil {
+		// If os.Rename fails (e.g., cross-device), fallback to copy using standard library
+		src, openErr := os.Open(qpdfTmpFile.Name())
+		if openErr != nil {
+			fmt.Println("Error opening temp file for copying:", openErr)
+			os.Exit(1)
+		}
+		defer src.Close()
+		dst, createErr := os.Create(finalOutputFile)
+		if createErr != nil {
+			fmt.Println("Error creating final output file:", createErr)
+			os.Exit(1)
+		}
+		defer dst.Close()
+		_, copyErr := io.Copy(dst, src)
+		if copyErr != nil {
+			fmt.Println("Error copying final file to output location:", copyErr)
+			os.Exit(1)
+		}
+	}
+
+	outputFileSizeBytes := shared.FileSizeBytes(finalOutputFile)
 
 	printFileSizeReport(inputFileSizeBytes, outputFileSizeBytes)
 }

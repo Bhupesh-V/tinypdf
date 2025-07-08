@@ -1,23 +1,31 @@
 package service
 
 import (
+	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"strconv"
+	"tinypdf/shared"
 	"tinypdf/vendors/gs/entities"
 )
 
 type Service interface {
-	GenerateGSCommand(inputFile, outputFile string, config *entities.Config) (*exec.Cmd, error)
+	GenerateGSCommand(inputFile, outputFile string, config *entities.Config) *exec.Cmd
 }
 
 type service struct{}
 
 func New() Service {
+	if !shared.IsBinaryAvailable("gs") {
+		fmt.Println("Error: Ghostscript (gs) is not installed or not found in PATH.")
+		fmt.Println("Please install Ghostscript to use this tool.")
+		os.Exit(1)
+	}
 	return &service{}
 }
 
-func (s *service) GenerateGSCommand(inputFile, outputFile string, config *entities.Config) (*exec.Cmd, error) {
+func (s *service) GenerateGSCommand(inputFile, outputFile string, config *entities.Config) *exec.Cmd {
 	args := []string{
 		"-sDEVICE=pdfwrite",
 		"-dCompatibilityLevel=1.4",
@@ -25,17 +33,19 @@ func (s *service) GenerateGSCommand(inputFile, outputFile string, config *entiti
 		"-dNOPAUSE",
 		"-dQUIET",
 		"-dDownsampleColorImages=true",
-		"-dColorImageDownsampleType=/Bicubic",
+		"-dColorImageDownsampleType=/Average",
 		"-dDownsampleMonoImages=true",
 		"-dMonoImageDownsampleType=/Subsample",
 		"-dDownsampleGrayImages=true",
-		"-dGrayImageDownsampleType=/Bicubic",
+		"-dGrayImageDownsampleType=/Average",
+		// "-dTextAlphaBits=50",
+		// "-dGraphicsAlphaBits=50",
 	}
 
 	// Add config options
 	if config != nil {
 		if config.Preset != "" {
-			args = append(args, "-dPDFSETTINGS=/"+config.Preset)
+			// args = append(args, "-dPDFSETTINGS=/"+config.Preset)
 		}
 		if config.ColorImageResolution != 0 {
 			args = append(args, "-dColorImageResolution="+strconv.Itoa(config.ColorImageResolution))
@@ -55,5 +65,7 @@ func (s *service) GenerateGSCommand(inputFile, outputFile string, config *entiti
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	return cmd, nil
+	log.Println(cmd.String())
+
+	return cmd
 }
