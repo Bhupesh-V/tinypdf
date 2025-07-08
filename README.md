@@ -47,13 +47,13 @@ TODO
 - [poppler-utils](https://poppler.freedesktop.org/)
 - [cpdf](https://community.coherentpdf.com/)
 
-## Packages
+<!-- ## Packages
 
 - https://github.com/MrSaints/go-ghostscript
 - [pdfsizeopt](https://github.com/pts/pdfsizeopt)
   ```
   ./pdfsizeopt --optimize --quiet ~/Documents/personal/tinypdf/tinypdf-small.pdf  test.pdf
-  ```
+  ``` -->
 
 ## Comparisons
 
