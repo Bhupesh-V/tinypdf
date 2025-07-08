@@ -1,0 +1,19 @@
+{
+  "configurations": [
+    {
+      "name": "Launch file",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "main.go",
+      "args": [
+        "-i",
+        "original.pdf",
+        "-preset",
+        "printer",
+        "-quality",
+        "75",
+      ],
+    }
+  ]
+}

@@ -48,6 +48,8 @@ func (s *service) GenerateGSCommand(inputFile, outputFile string, config *entiti
 		"-dMonoImageDownsampleType=/Subsample",
 		"-dDownsampleGrayImages=true",
 		"-dGrayImageDownsampleType=/Average",
+		// "-dSubsetFonts=false",
+		// "-dEmbedAllFonts=true",
 		// "-dTextAlphaBits=50",
 		// "-dGraphicsAlphaBits=50",
 	}
