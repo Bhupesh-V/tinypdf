@@ -63,6 +63,10 @@ func main() {
 	qpdfService := qpdf.New()
 	pdftocairoService := pdftocairo.New()
 
+	defer gsService.Close()
+	defer qpdfService.Close()
+	defer pdftocairoService.Close()
+
 	inputPath := flag.String("i", "", "Path to input PDF")
 	preset := flag.String("preset", "screen", "Compression preset: screen, ebook, printer, prepress")
 	quality := flag.Float64("quality", 50, "Quality percent (10-90)")
@@ -97,37 +101,16 @@ func main() {
 	colorRes, monoRes, grayRes := resolutions[0], resolutions[1], resolutions[2]
 
 	// Create temp files for intermediary steps
-	gsTmpFile, err := os.CreateTemp("", "tinypdf-gs-*.pdf")
-	if err != nil {
-		fmt.Println("Error creating temp file for Ghostscript output:", err)
-		os.Exit(1)
-	}
-	defer os.Remove(gsTmpFile.Name())
-	gsTmpFile.Close()
+	gsTmpFile := gsService.GetTempFileName()
+	qpdfTmpFile := qpdfService.GetTempFileName()
+	pdftocairoTmpFile := pdftocairoService.GetTempFileName()
 
-	qpdfTmpFile, err := os.CreateTemp("", "tinypdf-qpdf-*.pdf")
+	err := pdftocairoService.GeneratePdftocairoCommand(*inputPath, pdftocairoTmpFile).Run()
 	if err != nil {
-		fmt.Println("Error creating temp file for QPDF output:", err)
-		os.Exit(1)
-	}
-	defer os.Remove(qpdfTmpFile.Name())
-	qpdfTmpFile.Close()
-
-	pdftocairoTmpFile, err := os.CreateTemp("", "tinypdf-pdftocairo-*.pdf")
-	if err != nil {
-		fmt.Println("Error creating temp file for pdftocairo output:", err)
-		os.Exit(1)
-	}
-	defer os.Remove(pdftocairoTmpFile.Name())
-	pdftocairoTmpFile.Close()
-
-	err = pdftocairoService.GeneratePdftocairoCommand(*inputPath, pdftocairoTmpFile.Name()).Run()
-	if err != nil {
-		fmt.Println("Error running pdftocairo command:", err)
 		os.Exit(1)
 	}
 
-	err = gsService.GenerateGSCommand(pdftocairoTmpFile.Name(), gsTmpFile.Name(), &gsEntities.Config{
+	err = gsService.GenerateGSCommand(pdftocairoTmpFile, gsTmpFile, &gsEntities.Config{
 		Preset:               *preset,
 		ColorImageResolution: colorRes,
 		MonoImageResolution:  monoRes,
@@ -137,17 +120,17 @@ func main() {
 		os.Exit(1)
 	}
 
-	err = qpdfService.GenerateQpdfCommand(gsTmpFile.Name(), qpdfTmpFile.Name()).Run()
+	err = qpdfService.GenerateQpdfCommand(gsTmpFile, qpdfTmpFile).Run()
 	if err != nil {
 		os.Exit(1)
 	}
 
 	// Move final file to user's directory with correct name
 	finalOutputFile := fmt.Sprintf("tinypdf-%s", *inputPath)
-	err = os.Rename(qpdfTmpFile.Name(), finalOutputFile)
+	err = os.Rename(qpdfTmpFile, finalOutputFile)
 	if err != nil {
 		// If os.Rename fails (e.g., cross-device), fallback to copy using standard library
-		src, openErr := os.Open(qpdfTmpFile.Name())
+		src, openErr := os.Open(qpdfTmpFile)
 		if openErr != nil {
 			fmt.Println("Error opening temp file for copying:", openErr)
 			os.Exit(1)

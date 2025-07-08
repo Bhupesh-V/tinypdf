@@ -10,9 +10,12 @@ import (
 
 type Service interface {
 	GeneratePdftocairoCommand(inputFile, outputFile string) *exec.Cmd
+	Close()
+	GetTempFileName() string
 }
 
 type service struct {
+	pdftocairoFile *os.File // Temporary file for pdftocairo output
 }
 
 func New() Service {
@@ -20,7 +23,14 @@ func New() Service {
 		fmt.Println("Error: pdftocairo is not installed or not found in PATH.")
 		os.Exit(1)
 	}
-	return &service{}
+	pdftocairoTmpFile, err := os.CreateTemp("", "tinypdf-pdftocairo-*.pdf")
+	if err != nil {
+		fmt.Println("Error creating temp file for pdftocairo output:", err)
+		os.Exit(1)
+	}
+	return &service{
+		pdftocairoFile: pdftocairoTmpFile,
+	}
 }
 
 func (s *service) GeneratePdftocairoCommand(inputFile, outputFile string) *exec.Cmd {
@@ -36,4 +46,18 @@ func (s *service) GeneratePdftocairoCommand(inputFile, outputFile string) *exec.
 
 	log.Println(cmd.String())
 	return cmd
+}
+
+func (s *service) Close() {
+	if s.pdftocairoFile != nil {
+		s.pdftocairoFile.Close()
+		os.Remove(s.pdftocairoFile.Name())
+	}
+}
+
+func (s *service) GetTempFileName() string {
+	if s.pdftocairoFile != nil {
+		return s.pdftocairoFile.Name()
+	}
+	return ""
 }

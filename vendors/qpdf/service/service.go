@@ -10,9 +10,12 @@ import (
 
 type Service interface {
 	GenerateQpdfCommand(inputFile, outputFile string) *exec.Cmd
+	Close()
+	GetTempFileName() string
 }
 
 type service struct {
+	qpdfFile *os.File // Temporary file for QPDF output
 }
 
 func New() Service {
@@ -20,7 +23,14 @@ func New() Service {
 		fmt.Println("Error: QPDF is not installed or not found in PATH.")
 		os.Exit(1)
 	}
-	return &service{}
+	qpdfTmpFile, err := os.CreateTemp("", "tinypdf-qpdf-*.pdf")
+	if err != nil {
+		fmt.Println("Error creating temp file for QPDF output:", err)
+		os.Exit(1)
+	}
+	return &service{
+		qpdfFile: qpdfTmpFile,
+	}
 }
 
 func (s *service) GenerateQpdfCommand(inputFile, outputFile string) *exec.Cmd {
@@ -43,4 +53,18 @@ func (s *service) GenerateQpdfCommand(inputFile, outputFile string) *exec.Cmd {
 
 	log.Println(cmd.String())
 	return cmd
+}
+
+func (s *service) Close() {
+	if s.qpdfFile != nil {
+		s.qpdfFile.Close()
+		os.Remove(s.qpdfFile.Name())
+	}
+}
+
+func (s *service) GetTempFileName() string {
+	if s.qpdfFile != nil {
+		return s.qpdfFile.Name()
+	}
+	return ""
 }

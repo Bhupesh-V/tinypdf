@@ -12,16 +12,27 @@ import (
 
 type Service interface {
 	GenerateGSCommand(inputFile, outputFile string, config *entities.Config) *exec.Cmd
+	Close()
+	GetTempFileName() string
 }
 
-type service struct{}
+type service struct {
+	gsFile *os.File // Temporary file for Ghostscript output
+}
 
 func New() Service {
 	if !shared.IsBinaryAvailable("gs") {
 		fmt.Println("Error: Ghostscript (gs) is not installed or not found in PATH.")
 		os.Exit(1)
 	}
-	return &service{}
+	gsTmpFile, err := os.CreateTemp("", "tinypdf-gs-*.pdf")
+	if err != nil {
+		fmt.Println("Error creating temp file for Ghostscript output:", err)
+		os.Exit(1)
+	}
+	return &service{
+		gsFile: gsTmpFile,
+	}
 }
 
 func (s *service) GenerateGSCommand(inputFile, outputFile string, config *entities.Config) *exec.Cmd {
@@ -67,4 +78,24 @@ func (s *service) GenerateGSCommand(inputFile, outputFile string, config *entiti
 	log.Println(cmd.String())
 
 	return cmd
+}
+
+func (s *service) Close() {
+	if s.gsFile != nil {
+		err := s.gsFile.Close()
+		if err != nil {
+			log.Println("Error closing Ghostscript temp file:", err)
+		}
+		err = os.Remove(s.gsFile.Name())
+		if err != nil {
+			log.Println("Error removing Ghostscript temp file:", err)
+		}
+	}
+}
+
+func (s *service) GetTempFileName() string {
+	if s.gsFile != nil {
+		return s.gsFile.Name()
+	}
+	return ""
 }
