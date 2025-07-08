@@ -6,6 +6,11 @@ Reduce/Compress PDF file size
 
 At its core, `tinypdf` is a utility that uses multiple PDF tools behind the scenes to reduce file size, with a touch of configuration magic to make it seamless.
 
+## Why?
+
+- I wasn't really comfortable uploading sensitive files on web-server based PDF compression tools.
+- I like doing this [kind](https://bhupesh.me/publishing-my-first-ever-dockerfile-optimization-ugit/) of [stuff](https://bhupesh.me/minimalist-guide-git-clone/) (reducing asset sizes).
+
 ## Installation
 
 ```bash
