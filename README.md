@@ -14,6 +14,30 @@ docker pull bhupeshimself/tinypdf
 docker run --rm -it -v $(pwd):/app bhupeshimself/tinypdf
 ```
 
+If everything goes good, you should see a welcome text like this
+
+```
+
+▗ ▘       ▌▐▘
+▜▘▌▛▌▌▌▛▌▛▌▜▘
+▐▖▌▌▌▙▌▙▌▙▌▐
+     ▄▌▌
+
+
+Usage: tinypdf -i input.pdf [-preset screen|ebook|printer|prepress] [-quality 50]
+
+Example: tinypdf -i input.pdf -preset ebook -quality 60
+
+Options:
+  -preset         One of: screen, ebook, printer, prepress (default: screen)
+  -quality        Quality percentage between 10 and 90 (default: 50)
+
+```
+
+## Usage
+
+TODO
+
 ## Acknowledgements
 
 `tinypdf` would not have been possible without these tools 💙
