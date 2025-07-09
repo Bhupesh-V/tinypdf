@@ -6,6 +6,7 @@
   - [Fonts](#fonts)
   - [Images](#images)
 - [Resources](#resources)
+- [Tools](#tools)
 
 ## Checklist
 
@@ -58,3 +59,16 @@ Reference: https://github.com/pts/pdfsizeopt/tree/master/pts_pdfsizeopt2009_talk
 
 - [The Structure of a PDF File](https://medium.com/@jberkenbilt/the-structure-of-a-pdf-file-6f08114a58f6)
 - [PDF Specificaiton 2.0](https://pdfa.org/resource/iso-32000-2/) - Its behind a paywall (although free) and requires personal details to get access (weird?).
+
+## Tools
+
+The PDF optimise ecosystem seems to be weirdly big, I cane able to discover following tools:
+
+- qpdf
+- cpdf
+- mutool
+- ghostscript
+- pdfsizeopt
+- pdftocairo
+- pdfcpu
+- ocrmypdf
