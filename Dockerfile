@@ -21,7 +21,7 @@ RUN chmod +x tinypdf && mv tinypdf /usr/bin/
 # Third stage: Copy only necessary binaries and their dependencies
 FROM scratch
 
-LABEL description="A tiny PDF manipulation tool"
+LABEL description="🤏🏽 Reduce PDF file size"
 LABEL maintainer="Bhupesh Varshney <varshneybhupesh@gmail.com>"
 
 # Create tmp directory for temporary files
@@ -33,23 +33,6 @@ ENV TMPDIR=/tmp
 # Copy the main binary
 COPY --from=tinypdf-ops /usr/bin/tinypdf /usr/bin/
 
-# Copy poppler-utils binaries
-COPY --from=tinypdf-ops /usr/bin/pdfinfo /usr/bin/
-COPY --from=tinypdf-ops /usr/bin/pdftoppm /usr/bin/
-COPY --from=tinypdf-ops /usr/bin/pdftotext /usr/bin/
-COPY --from=tinypdf-ops /usr/bin/pdftops /usr/bin/
-COPY --from=tinypdf-ops /usr/bin/pdfunite /usr/bin/
-COPY --from=tinypdf-ops /usr/bin/pdfseparate /usr/bin/
-
-# Copy qpdf binary
-COPY --from=tinypdf-ops /usr/bin/qpdf /usr/bin/
-
-# Copy ghostscript binary
-COPY --from=tinypdf-ops /usr/bin/gs /usr/bin/
-
-# Copy ghostscript data files
-COPY --from=tinypdf-ops /usr/share/ghostscript/ /usr/share/ghostscript
-
 # Copy essential system libraries
 COPY --from=tinypdf-ops /lib/ld-musl-*.so.1 /lib/
 COPY --from=tinypdf-ops /lib/libc.musl-*.so.1 /lib/
@@ -57,9 +40,19 @@ COPY --from=tinypdf-ops /usr/lib/libgcc_s.so.1 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libstdc++.so.6 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libz.so.1 /usr/lib/
 
+# Copy qpdf binary
+COPY --from=tinypdf-ops /usr/bin/qpdf /usr/bin/
 # Copy qpdf dependencies
 COPY --from=tinypdf-ops /usr/lib/libqpdf.so.30 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libcrypto.so.3 /usr/lib/
+
+# Copy poppler-utils binaries
+# COPY --from=tinypdf-ops /usr/bin/pdfinfo /usr/bin/
+# COPY --from=tinypdf-ops /usr/bin/pdftoppm /usr/bin/
+# COPY --from=tinypdf-ops /usr/bin/pdftotext /usr/bin/
+# COPY --from=tinypdf-ops /usr/bin/pdftops /usr/bin/
+# COPY --from=tinypdf-ops /usr/bin/pdfunite /usr/bin/
+# COPY --from=tinypdf-ops /usr/bin/pdfseparate /usr/bin/
 
 # Copy pdftocairo dependencies
 COPY --from=tinypdf-ops /usr/bin/pdftocairo /usr/bin/
@@ -77,6 +70,10 @@ COPY --from=tinypdf-ops /usr/lib/libnspr4.so /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libnssutil3.so /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libplds4.so /usr/lib/
 
+# Copy ghostscript binary
+COPY --from=tinypdf-ops /usr/bin/gs /usr/bin/
+# Copy ghostscript data files
+COPY --from=tinypdf-ops /usr/share/ghostscript/ /usr/share/ghostscript
 # Copy ghostscript dependencies
 COPY --from=tinypdf-ops /usr/lib/libXt.so.6 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libX11.so.6 /usr/lib/
