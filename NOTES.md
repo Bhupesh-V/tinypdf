@@ -7,6 +7,7 @@
   - [Images](#images)
 - [Resources](#resources)
 - [Tools](#tools)
+- [Author Notes](#author-notes)
 
 ## Checklist
 
@@ -37,12 +38,11 @@ Reference: https://github.com/pts/pdfsizeopt/tree/master/pts_pdfsizeopt2009_talk
 ### Images
 
 - [ ] Convert some inline images to objects to help deduplication.
-- [ ]Use grayscale or a palette instead of `RGB` or `CMYK`.
+- [ ] Use grayscale or a palette instead of `RGB` or `CMYK`.
 - [ ] Use the smallest bit depth.
 - [ ] Get rid of image duplicates based on pixel colors.
 - [x] Reduce image resolution (300 DPI or 600 DPI): no need for a higher resolution than the printer’s for the scaled image.
 - [x] Choose the JPEG quality.
-- [ ] Optimize poorly exported images with `sam2p`.
 
 <!-- ## Questions
 
@@ -72,3 +72,7 @@ The PDF optimise ecosystem seems to be weirdly big, I cane able to discover foll
 - pdftocairo
 - pdfcpu
 - ocrmypdf
+
+## Author Notes
+
+- Make a PDF structure readable with `qpdf --qdf --object-streams=disable original.pdf  output.pdf`

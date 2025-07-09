@@ -35,6 +35,8 @@ func New() Service {
 
 func (s *service) GenerateQpdfCommand(inputFile, outputFile string) *exec.Cmd {
 	// Source: https://qpdf.readthedocs.io/en/stable/cli.html#optimizing-file-size
+
+	// --linearize is meant for web optimization, but it also increases file size
 	cmd := exec.Command(
 		"qpdf",
 		"--object-streams=generate",
