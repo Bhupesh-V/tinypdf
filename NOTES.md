@@ -59,6 +59,7 @@ Reference: https://github.com/pts/pdfsizeopt/tree/master/pts_pdfsizeopt2009_talk
 
 - [The Structure of a PDF File](https://medium.com/@jberkenbilt/the-structure-of-a-pdf-file-6f08114a58f6)
 - [PDF Specificaiton 2.0](https://pdfa.org/resource/iso-32000-2/) - Its behind a paywall (although free) and requires personal details to get access (weird?).
+- [PDF Specification 1.7 (free)](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf)
 
 ## Tools
 
@@ -75,4 +76,13 @@ The PDF optimise ecosystem seems to be weirdly big, I cane able to discover foll
 
 ## Author Notes
 
-- Make a PDF structure readable with `qpdf --qdf --object-streams=disable original.pdf  output.pdf`
+- Make a PDF structure readable with `qpdf --qdf --object-streams=disable original.pdf  output.pdf`.
+- Check images inside a PDF, using
+  - `cpdf`
+    ```bash
+    cpdf -list-images in.pdf
+    ```
+  - `pdfimages`
+    ```bash
+    pdfimages -list tinypdf-original.pdf
+    ```
