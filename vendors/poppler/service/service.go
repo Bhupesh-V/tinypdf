@@ -5,13 +5,19 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strconv"
+	"strings"
 	"tinypdf/shared"
+	"tinypdf/vendors/poppler/entities"
+
+	"github.com/dustin/go-humanize"
 )
 
 type Service interface {
 	GeneratePdftocairoCommand(inputFile, outputFile string) *exec.Cmd
 	Close()
 	GetTempFileName() string
+	ListImages(filePath string) ([]entities.Image, error)
 }
 
 type service struct {
@@ -60,4 +66,31 @@ func (s *service) GetTempFileName() string {
 		return s.pdftocairoFile.Name()
 	}
 	return ""
+}
+
+func (s *service) ListImages(filePath string) ([]entities.Image, error) {
+	cmd := exec.Command("pdfimages", "-list", filePath)
+	output, err := cmd.Output()
+	if err != nil {
+		return nil, err
+	}
+
+	var images []entities.Image
+	lines := strings.Split(string(output), "\n")
+	for _, line := range lines[2:] {
+		parts := strings.Fields(line)
+		if len(parts) < 6 {
+			continue
+		}
+		size, _ := humanize.ParseBigBytes(parts[14])
+		width, _ := strconv.Atoi(parts[3])
+		height, _ := strconv.Atoi(parts[4])
+		images = append(images, entities.Image{
+			Size:   size.Int64(),
+			Color:  parts[5],
+			Width:  width,
+			Height: height,
+		})
+	}
+	return images, nil
 }

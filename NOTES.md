@@ -31,7 +31,7 @@ Reference: https://github.com/pts/pdfsizeopt/tree/master/pts_pdfsizeopt2009_talk
 ### Fonts
 
 - [ ] Convert Type 1 (PostScript Type 1) fonts to [CFF](https://adobe-type-tools.github.io/font-tech-notes/pdfs/5176.CFF.pdf) (Type 1C, Type 2)
-- [ ] Unify subsets of the same font.
+- [ ] Unify [subsets](https://fonts.google.com/knowledge/glossary/subsetting) of the same font.
 - [ ] Embed vector fonts.
 
 

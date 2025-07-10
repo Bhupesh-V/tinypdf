@@ -1,0 +1,108 @@
+FROM alpine:latest
+
+# Install build dependencies and runtime dependencies
+RUN apk add --no-cache \
+    # Build dependencies
+    gcc \
+    g++ \
+    make \
+    autoconf \
+    automake \
+    libtool \
+    linux-headers \
+    musl-dev \
+    zlib-dev \
+    libpng-dev \
+    libjpeg-turbo-dev \
+    fontconfig-dev \
+    freetype-dev \
+    # Runtime dependencies
+    zlib \
+    libpng \
+    libjpeg-turbo \
+    fontconfig \
+    freetype \
+    # Download tools
+    curl \
+    tar \
+    gzip
+
+# Set working directory
+WORKDIR /tmp/ghostscript-build
+# https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs10051/ghostscript-10.05.1.tar.gz
+# Download and extract Ghostscript source
+ARG GHOSTSCRIPT_VERSION=10.05.1
+RUN curl -L "https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs${GHOSTSCRIPT_VERSION//./}/ghostscript-${GHOSTSCRIPT_VERSION}.tar.gz" -o ghostscript.tar.gz \
+    && tar -xzf ghostscript.tar.gz \
+    && cd ghostscript-${GHOSTSCRIPT_VERSION} \
+    && mv * ../ \
+    && cd .. \
+    && rm -rf ghostscript-${GHOSTSCRIPT_VERSION} ghostscript.tar.gz
+
+# Configure build for PDF manipulation only
+# This configuration includes:
+# - PDF support (enabled by default)
+# - PostScript Level 2 and 3 support
+# - Common image output devices (png, jpeg, tiff)
+# - Disables X11 and other unnecessary features
+RUN ./configure \
+    --prefix=/usr/local \
+    --disable-gtk \
+    --disable-dbus \
+    --disable-cups \
+    --disable-compile-inits \
+    --with-system-libtiff=no \
+    # --with-jbig2dec=no \
+    --with-libidn=no \
+    --with-libpaper=no \
+    --with-x=no \
+    # --enable-dynamic \
+    # --disable-threading \
+    CFLAGS="-Os -fomit-frame-pointer" \
+    LDFLAGS="-Wl,--strip-all"
+
+# Build Ghostscript
+RUN make -j$(nproc)
+
+# Install Ghostscript
+RUN make install
+
+# Clean up build dependencies and temporary files
+RUN apk del gcc g++ make autoconf automake libtool linux-headers musl-dev curl tar gzip \
+    && rm -rf /tmp/ghostscript-build \
+    && rm -rf /var/cache/apk/*
+
+# Create working directory for PDF operations
+WORKDIR /workspace
+
+# Create non-root user for security
+RUN addgroup -g 1001 gsuser && \
+    adduser -D -u 1001 -G gsuser gsuser && \
+    chown -R gsuser:gsuser /workspace
+
+USER gsuser
+
+# Verify installation and show supported devices
+RUN gs --version && \
+    gs -h | grep -A 20 "Available devices:" || true
+
+# Default command - show help
+CMD ["gs", "--help"]
+
+# Common usage examples in comments:
+# 
+# PDF to PNG:
+# docker run --rm -v /path/to/pdfs:/workspace ghostscript-pdf \
+#   gs -dNOPAUSE -dBATCH -sDEVICE=png16m -r150 -sOutputFile=output-%03d.png input.pdf
+#
+# PDF to JPEG:
+# docker run --rm -v /path/to/pdfs:/workspace ghostscript-pdf \
+#   gs -dNOPAUSE -dBATCH -sDEVICE=jpeg -r150 -sOutputFile=output-%03d.jpg input.pdf
+#
+# PDF info:
+# docker run --rm -v /path/to/pdfs:/workspace ghostscript-pdf \
+#   gs -dNOPAUSE -dBATCH -sDEVICE=bbox input.pdf
+#
+# PDF optimization:
+# docker run --rm -v /path/to/pdfs:/workspace ghostscript-pdf \
+#   gs -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/screen -sOutputFile=output.pdf input.pdf

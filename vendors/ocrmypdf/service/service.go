@@ -40,7 +40,7 @@ func (s *service) GenerateOcrmypdfCommand(inputFile, outputFile string) *exec.Cm
 		"ocrmypdf",
 		"--quiet",
 		"--skip-text",
-		"--optimize 3",
+		"--optimize", "3",
 		inputFile,
 		outputFile,
 	)

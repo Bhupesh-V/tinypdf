@@ -3,14 +3,12 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
 	"os"
 	"tinypdf/entities"
+	tools "tinypdf/internal"
 	"tinypdf/shared"
+
 	gsEntities "tinypdf/vendors/gs/entities"
-	gs "tinypdf/vendors/gs/service"
-	pdftocairo "tinypdf/vendors/pdftocairo/service"
-	qpdf "tinypdf/vendors/qpdf/service"
 
 	"github.com/dustin/go-humanize"
 )
@@ -59,14 +57,6 @@ func printFileSizeReport(originalBytes, outputBytes int64) {
 }
 
 func main() {
-	gsService := gs.New()
-	qpdfService := qpdf.New()
-	pdftocairoService := pdftocairo.New()
-
-	defer gsService.Close()
-	defer qpdfService.Close()
-	defer pdftocairoService.Close()
-
 	inputPath := flag.String("i", "", "Path to input PDF")
 	preset := flag.String("preset", "screen", "Compression preset: screen, ebook, printer, prepress")
 	quality := flag.Float64("quality", 50, "Quality percent (10-90)")
@@ -100,56 +90,32 @@ func main() {
 	)
 	colorRes, monoRes, grayRes := resolutions[0], resolutions[1], resolutions[2]
 
-	// Create temp files for intermediary steps
-	gsTmpFile := gsService.GetTempFileName()
-	qpdfTmpFile := qpdfService.GetTempFileName()
-	pdftocairoTmpFile := pdftocairoService.GetTempFileName()
+	pipeline := shared.Pipe(
+		tools.Poppler,
+		tools.Ghostscript,
+		tools.QPDF,
+		// collect the final output file
+		func(inputFilePath string, c shared.Config) string {
+			finalOutputFile := fmt.Sprintf("tinypdf-%s", c.OriginalFilePath)
 
-	err := pdftocairoService.GeneratePdftocairoCommand(*inputPath, pdftocairoTmpFile).Run()
-	if err != nil {
-		os.Exit(1)
-	}
+			err := os.Rename(inputFilePath, finalOutputFile)
+			if err != nil {
+				os.Exit(1)
+			}
+			return finalOutputFile
+		},
+	)
 
-	err = gsService.GenerateGSCommand(pdftocairoTmpFile, gsTmpFile, &gsEntities.Config{
-		Preset:               *preset,
-		ColorImageResolution: colorRes,
-		MonoImageResolution:  monoRes,
-		GrayImageResolution:  grayRes,
-	}).Run()
-	if err != nil {
-		os.Exit(1)
-	}
-
-	err = qpdfService.GenerateQpdfCommand(gsTmpFile, qpdfTmpFile).Run()
-	if err != nil {
-		os.Exit(1)
-	}
-
-	// Move final file to user's directory with correct name
-	finalOutputFile := fmt.Sprintf("tinypdf-%s", *inputPath)
-	err = os.Rename(qpdfTmpFile, finalOutputFile)
-	if err != nil {
-		// If os.Rename fails (e.g., cross-device), fallback to copy using standard library
-		src, openErr := os.Open(qpdfTmpFile)
-		if openErr != nil {
-			fmt.Println("Error opening temp file for copying:", openErr)
-			os.Exit(1)
-		}
-		defer src.Close()
-		dst, createErr := os.Create(finalOutputFile)
-		if createErr != nil {
-			fmt.Println("Error creating final output file:", createErr)
-			os.Exit(1)
-		}
-		defer dst.Close()
-		_, copyErr := io.Copy(dst, src)
-		if copyErr != nil {
-			fmt.Println("Error copying final file to output location:", copyErr)
-			os.Exit(1)
-		}
-	}
+	finalOutputFile := pipeline(*inputPath, shared.Config{
+		OriginalFilePath: *inputPath,
+		GSConfig: &gsEntities.Config{
+			Preset:               *preset,
+			ColorImageResolution: colorRes,
+			MonoImageResolution:  monoRes,
+			GrayImageResolution:  grayRes,
+		},
+	})
 
 	outputFileSizeBytes := shared.FileSizeBytes(finalOutputFile)
-
 	printFileSizeReport(inputFileSizeBytes, outputFileSizeBytes)
 }
