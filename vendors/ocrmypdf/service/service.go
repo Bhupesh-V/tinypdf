@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"tinypdf/shared"
@@ -47,7 +46,6 @@ func (s *service) GenerateOcrmypdfCommand(inputFile, outputFile string) *exec.Cm
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	log.Println(cmd.String())
 	return cmd
 }
 

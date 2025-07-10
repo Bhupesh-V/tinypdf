@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"tinypdf/shared"
@@ -53,7 +52,6 @@ func (s *service) GenerateQpdfCommand(inputFile, outputFile string) *exec.Cmd {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	log.Println(cmd.String())
 	return cmd
 }
 

@@ -77,8 +77,6 @@ func (s *service) GenerateGSCommand(inputFile, outputFile string, config *entiti
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	log.Println(cmd.String())
-
 	return cmd
 }
 

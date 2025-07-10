@@ -3,6 +3,7 @@ package shared
 type Config struct {
 	OriginalFilePath string
 	GSConfig         any
+	IsDebug          bool
 	// add more vendor-specific configs
 }
 

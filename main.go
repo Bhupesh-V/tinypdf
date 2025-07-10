@@ -106,7 +106,13 @@ func main() {
 		},
 	)
 
+	var isDebug bool
+	if os.Getenv("TINYPDF_DEBUG") != "" {
+		isDebug = true
+	}
+
 	finalOutputFile := pipeline(*inputPath, shared.Config{
+		IsDebug:          isDebug,
 		OriginalFilePath: *inputPath,
 		GSConfig: &gsEntities.Config{
 			Preset:               *preset,

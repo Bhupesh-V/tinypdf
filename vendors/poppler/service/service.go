@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"strconv"
@@ -50,7 +49,6 @@ func (s *service) GeneratePdftocairoCommand(inputFile, outputFile string) *exec.
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	log.Println(cmd.String())
 	return cmd
 }
 
