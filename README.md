@@ -1,14 +1,14 @@
 # tinypdf
 
-Reduce/Compress PDF file size
+Reduce PDF file size
 
 ## What is this?
 
-At its core, `tinypdf` is a utility that uses multiple PDF tools behind the scenes to reduce file size, with a touch of configuration magic to make it seamless.
+At its core, `tinypdf` is a wrapper based utility that uses multiple PDF tools behind the scenes to reduce file sizes, with a touch of configuration magic to make it seamless.
 
 ## Why?
 
-- I wasn't really comfortable uploading sensitive files on web-server based PDF compression tools.
+- I wasn't really comfortable uploading sensitive files on web-server based PDF compression tools. Existing GUI based tools on my system resulted in unsatisfactory results (I was [greedy](https://x.com/bhupeshimself/status/1941499700802355317), since I wanted to reduce a file from 19MB to less than 1.5MB).
 - I like doing this [kind](https://bhupesh.me/publishing-my-first-ever-dockerfile-optimization-ugit/) of [stuff](https://bhupesh.me/minimalist-guide-git-clone/) (reducing asset sizes).
 
 ## Installation
@@ -52,16 +52,19 @@ TODO
 - [poppler-utils](https://poppler.freedesktop.org/)
 - [cpdf](https://community.coherentpdf.com/)
 
-<!-- ## Packages
-
-- https://github.com/MrSaints/go-ghostscript
-- [pdfsizeopt](https://github.com/pts/pdfsizeopt)
-  ```
-  ./pdfsizeopt --optimize --quiet ~/Documents/personal/tinypdf/tinypdf-small.pdf  test.pdf
-  ``` -->
-
-## Comparisons
+<!-- ## Comparisons -->
 
 TODO
 
 <!-- - Better than sejda[.]com -->
+
+## Alternatives
+
+- `ocrmypdf` on its own does a [good job](https://ocrmypdf.readthedocs.io/en/latest/optimizer.html) for reducing PDF size. However watch out for unintentional image removals from the file.
+- [`pdfsizeopt`](https://github.com/pts/pdfsizeopt/) is probably one of the earliest tools to optimize PDF file size.
+
+## Assets
+
+The PDF assets used to test `tinypdf` are available on Internet Archive.
+
+- [The_Grand_Design](https://archive.org/details/The_Grand_Design)
