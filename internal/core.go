@@ -11,7 +11,7 @@ import (
 )
 
 func Ghostscript(inputFilePath string, c shared.Config) string {
-	gsService := gs.New()
+	gsService := gs.New(c.IsDebug)
 	gsTmpFile := gsService.GetTempFileName()
 
 	preset := c.GSConfig.(*gsEntities.Config).Preset
@@ -39,7 +39,7 @@ func Ghostscript(inputFilePath string, c shared.Config) string {
 }
 
 func Poppler(inputFilePath string, c shared.Config) string {
-	popplerService := poppler.New()
+	popplerService := poppler.New(c.IsDebug)
 	pdftocairoTmpFile := popplerService.GetTempFileName()
 
 	cmd := popplerService.GeneratePdftocairoCommand(inputFilePath, pdftocairoTmpFile)
@@ -56,7 +56,7 @@ func Poppler(inputFilePath string, c shared.Config) string {
 }
 
 func QPDF(inputFilePath string, c shared.Config) string {
-	qpdfService := qpdf.New()
+	qpdfService := qpdf.New(c.IsDebug)
 	qpdfTmpFile := qpdfService.GetTempFileName()
 
 	cmd := qpdfService.GenerateQpdfCommand(inputFilePath, qpdfTmpFile)

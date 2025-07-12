@@ -17,10 +17,11 @@ type Service interface {
 }
 
 type service struct {
-	gsFile *os.File // Temporary file for Ghostscript output
+	gsFile  *os.File // Temporary file for Ghostscript output
+	isDebug bool
 }
 
-func New() Service {
+func New(isDebug bool) Service {
 	if !shared.IsBinaryAvailable("gs") {
 		fmt.Println("Error: Ghostscript (gs) is not installed or not found in PATH.")
 		os.Exit(1)
@@ -31,7 +32,8 @@ func New() Service {
 		os.Exit(1)
 	}
 	return &service{
-		gsFile: gsTmpFile,
+		gsFile:  gsTmpFile,
+		isDebug: isDebug,
 	}
 }
 
@@ -75,7 +77,10 @@ func (s *service) GenerateGSCommand(inputFile, outputFile string, config *entiti
 
 	cmd := exec.Command("gs", args...)
 	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+
+	if s.isDebug {
+		cmd.Stderr = os.Stdout
+	}
 
 	return cmd
 }

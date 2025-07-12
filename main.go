@@ -3,7 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
+	"path/filepath"
 	"tinypdf/entities"
 	tools "tinypdf/internal"
 	"tinypdf/shared"
@@ -23,13 +25,19 @@ func usage() {
      ▄▌▌
 
 
-Usage: tinypdf -i input.pdf [-preset screen|ebook|printer|prepress] [-quality 50]
+Usage:
+	tinypdf -i input.pdf [-preset screen|ebook|printer|prepress] [-quality 50]
 
-Example: tinypdf -i input.pdf -preset ebook -quality 60
+Example:
+	docker run --rm -v $(pwd):/app bhupeshimself/tinypdf -i input.pdf -preset printer -quality 40
 
 Options:
-  -preset         One of: screen, ebook, printer, prepress (default: screen)
-  -quality        Quality percentage between 10 and 90 (default: 50)`)
+	-preset         One of: screen, ebook, printer, prepress (default: screen)
+	-quality        Quality percentage between 10 and 90 (default: 50)
+
+Bugs:
+	Please report any issues on the GitHub repository.
+		https://github.com/Bhupesh-V/tinypdf/issues`)
 }
 
 func printFileSizeReport(originalBytes, outputBytes int64) {
@@ -64,6 +72,12 @@ func main() {
 	flag.Usage = usage
 	flag.Parse()
 
+	if len(os.Args) == 1 {
+		// just show usage if no args are provided
+		flag.Usage()
+		os.Exit(0)
+	}
+
 	if *inputPath == "" {
 		flag.Usage()
 		os.Exit(1)
@@ -73,6 +87,7 @@ func main() {
 		fmt.Printf("Error: Input file '%s' does not exist.\n", *inputPath)
 		os.Exit(1)
 	}
+
 	inputFileSizeBytes := shared.FileSizeBytes(*inputPath)
 
 	*quality = shared.Clamp(*quality, 10, 90)
@@ -96,12 +111,31 @@ func main() {
 		tools.QPDF,
 		// collect the final output file
 		func(inputFilePath string, c shared.Config) string {
-			finalOutputFile := fmt.Sprintf("tinypdf-%s", c.OriginalFilePath)
+			finalOutputFile := fmt.Sprintf("tinypdf-%s", c.OriginalFileName)
 
-			err := os.Rename(inputFilePath, finalOutputFile)
-			if err != nil {
+			// If os.Rename fails (e.g., cross-device), fallback to copy using standard library
+			src, openErr := os.Open(inputFilePath)
+			if openErr != nil {
+				fmt.Println("Error opening temp file for copying:", openErr)
 				os.Exit(1)
 			}
+			defer src.Close()
+
+			originalFileDir := filepath.Dir(c.OriginalFilePath)
+			finalOutputFile = filepath.Join(originalFileDir, finalOutputFile)
+
+			dst, createErr := os.Create(finalOutputFile)
+			if createErr != nil {
+				fmt.Println("Error creating final output file:", createErr)
+				os.Exit(1)
+			}
+			defer dst.Close()
+			_, copyErr := io.Copy(dst, src)
+			if copyErr != nil {
+				fmt.Println("Error copying final file to output location:", copyErr)
+				os.Exit(1)
+			}
+
 			return finalOutputFile
 		},
 	)
@@ -111,9 +145,12 @@ func main() {
 		isDebug = true
 	}
 
+	baseFileName := filepath.Base(*inputPath)
+
 	finalOutputFile := pipeline(*inputPath, shared.Config{
 		IsDebug:          isDebug,
 		OriginalFilePath: *inputPath,
+		OriginalFileName: baseFileName,
 		GSConfig: &gsEntities.Config{
 			Preset:               *preset,
 			ColorImageResolution: colorRes,

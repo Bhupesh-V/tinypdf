@@ -25,7 +25,7 @@ LABEL description="🤏🏽 Reduce PDF file size"
 LABEL maintainer="Bhupesh Varshney <varshneybhupesh@gmail.com>"
 
 # Create tmp directory for temporary files
-COPY --from=tinypdf-ops /tmp /tmp
+WORKDIR /tmp
 
 # Set environment variable for temporary directory
 ENV TMPDIR=/tmp

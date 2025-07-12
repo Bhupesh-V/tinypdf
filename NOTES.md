@@ -86,3 +86,7 @@ The PDF optimise ecosystem seems to be weirdly big, I cane able to discover foll
     ```bash
     pdfimages -list tinypdf-original.pdf
     ```
+- gs fails to run properly with `ebook` preset. Logs
+  ```
+  Failed to initialise downsample filter, downsampling aborted
+  ```

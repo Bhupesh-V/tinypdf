@@ -15,13 +15,14 @@ At its core, `tinypdf` is a wrapper based utility that uses multiple PDF tools b
 
 ```bash
 # TODO
-docker pull bhupeshimself/tinypdf
-docker run --rm -it -v $(pwd):/app bhupeshimself/tinypdf
+# Pull the Image first: docker pull bhupeshimself/tinypdf
+docker run --rm -v $(pwd):/app bhupeshimself/tinypdf
 ```
 
 If everything goes good, you should see a welcome text like this
 
 ```
+
 
 ▗ ▘       ▌▐▘
 ▜▘▌▛▌▌▌▛▌▛▌▜▘
@@ -29,13 +30,19 @@ If everything goes good, you should see a welcome text like this
      ▄▌▌
 
 
-Usage: tinypdf -i input.pdf [-preset screen|ebook|printer|prepress] [-quality 50]
+Usage:
+        tinypdf -i input.pdf [-preset screen|ebook|printer|prepress] [-quality 50]
 
-Example: tinypdf -i input.pdf -preset ebook -quality 60
+Example:
+        docker run --rm -v $(pwd):/app bhupeshimself/tinypdf -i input.pdf -preset printer -quality 40
 
 Options:
-  -preset         One of: screen, ebook, printer, prepress (default: screen)
-  -quality        Quality percentage between 10 and 90 (default: 50)
+        -preset         One of: screen, ebook, printer, prepress (default: screen)
+        -quality        Quality percentage between 10 and 90 (default: 50)
+
+Bugs:
+        Please report any issues on the GitHub repository.
+                https://github.com/Bhupesh-V/tinypdf/issues
 
 ```
 

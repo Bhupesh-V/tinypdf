@@ -21,9 +21,10 @@ type Service interface {
 
 type service struct {
 	pdftocairoFile *os.File // Temporary file for pdftocairo output
+	isDebug        bool
 }
 
-func New() Service {
+func New(isDebug bool) Service {
 	if !shared.IsBinaryAvailable("pdftocairo") {
 		fmt.Println("Error: pdftocairo is not installed or not found in PATH.")
 		os.Exit(1)
@@ -35,6 +36,7 @@ func New() Service {
 	}
 	return &service{
 		pdftocairoFile: pdftocairoTmpFile,
+		isDebug:        isDebug,
 	}
 }
 
@@ -47,7 +49,9 @@ func (s *service) GeneratePdftocairoCommand(inputFile, outputFile string) *exec.
 		outputFile,
 	)
 	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	if s.isDebug {
+		cmd.Stderr = os.Stdout
+	}
 
 	return cmd
 }

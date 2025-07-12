@@ -15,9 +15,10 @@ type Service interface {
 
 type service struct {
 	qpdfFile *os.File // Temporary file for QPDF output
+	isDebug  bool
 }
 
-func New() Service {
+func New(isDebug bool) Service {
 	if !shared.IsBinaryAvailable("qpdf") {
 		fmt.Println("Error: QPDF is not installed or not found in PATH.")
 		os.Exit(1)
@@ -29,6 +30,7 @@ func New() Service {
 	}
 	return &service{
 		qpdfFile: qpdfTmpFile,
+		isDebug:  isDebug,
 	}
 }
 
@@ -50,7 +52,9 @@ func (s *service) GenerateQpdfCommand(inputFile, outputFile string) *exec.Cmd {
 		outputFile,
 	)
 	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	if s.isDebug {
+		cmd.Stderr = os.Stdout
+	}
 
 	return cmd
 }
