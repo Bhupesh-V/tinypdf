@@ -90,3 +90,4 @@ The PDF optimise ecosystem seems to be weirdly big, I cane able to discover foll
   ```
   Failed to initialise downsample filter, downsampling aborted
   ```
+- Keep an eye out for MacOS support on building executables from docker image using [dockerc](https://github.com/NilsIrl/dockerc).

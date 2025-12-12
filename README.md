@@ -4,7 +4,7 @@ Reduce PDF file size
 
 ## What is this?
 
-At its core, `tinypdf` is a wrapper based utility that uses multiple PDF tools behind the scenes to reduce file sizes, with a touch of configuration magic to make it seamless.
+`tinypdf` is a utility that acts as a wrapper around multiple PDF manipulation tools, using smart configurations to streamline and simplify PDF file size reduction.
 
 ## Why?
 
