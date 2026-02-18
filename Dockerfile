@@ -38,13 +38,15 @@ COPY --from=tinypdf-ops /lib/ld-musl-*.so.1 /lib/
 COPY --from=tinypdf-ops /lib/libc.musl-*.so.1 /lib/
 COPY --from=tinypdf-ops /usr/lib/libgcc_s.so.1 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libstdc++.so.6 /usr/lib/
-COPY --from=tinypdf-ops /usr/lib/libz.so.1 /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/libz.so* /usr/lib/
+COPY --from=tinypdf-ops /lib/libz.so* /lib/
 
 # Copy qpdf binary
 COPY --from=tinypdf-ops /usr/bin/qpdf /usr/bin/
 # Copy qpdf dependencies
-COPY --from=tinypdf-ops /usr/lib/libqpdf.so.30 /usr/lib/
-COPY --from=tinypdf-ops /usr/lib/libcrypto.so.3 /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/libqpdf.so* /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/libcrypto.so* /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/liblzma.so* /usr/lib/
 
 # Copy poppler-utils binaries
 # COPY --from=tinypdf-ops /usr/bin/pdfinfo /usr/bin/
@@ -57,27 +59,27 @@ COPY --from=tinypdf-ops /usr/lib/libcrypto.so.3 /usr/lib/
 # Copy pdftocairo dependencies
 COPY --from=tinypdf-ops /usr/bin/pdftocairo /usr/bin/
 COPY --from=tinypdf-ops /usr/lib/libcairo.so.2 /usr/lib/
-COPY --from=tinypdf-ops /usr/lib/libpoppler.so.148 /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/libpoppler.so* /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libXext.so.6 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libXrender.so.1 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libxcb-render.so.0 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libxcb-shm.so.0 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libpixman-1.so.0 /usr/lib/
-COPY --from=tinypdf-ops /usr/lib/libsmime3.so /usr/lib/
-COPY --from=tinypdf-ops /usr/lib/libnss3.so /usr/lib/
-COPY --from=tinypdf-ops /usr/lib/libplc4.so /usr/lib/
-COPY --from=tinypdf-ops /usr/lib/libnspr4.so /usr/lib/
-COPY --from=tinypdf-ops /usr/lib/libnssutil3.so /usr/lib/
-COPY --from=tinypdf-ops /usr/lib/libplds4.so /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/libsmime* /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/libnss3.so* /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/libplc4.so* /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/libnspr4.so* /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/libnssutil3.so* /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/libplds4.so* /usr/lib/
 
 # Copy ghostscript binary
 COPY --from=tinypdf-ops /usr/bin/gs /usr/bin/
 # Copy ghostscript data files
 COPY --from=tinypdf-ops /usr/share/ghostscript/ /usr/share/ghostscript
 # Copy ghostscript dependencies
-COPY --from=tinypdf-ops /usr/lib/libXt.so.6 /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/libXt.so* /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libX11.so.6 /usr/lib/
-COPY --from=tinypdf-ops /usr/lib/libtiff.so.6 /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/libtiff.so* /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libcups.so.2 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libpng16.so.16 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libjbig2dec.so.0 /usr/lib/
@@ -86,8 +88,8 @@ COPY --from=tinypdf-ops /usr/lib/liblcms2.so.2 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libfontconfig.so.1 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libfreetype.so.6 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libopenjp2.so.7 /usr/lib/
-COPY --from=tinypdf-ops /usr/lib/libSM.so.6 /usr/lib/
-COPY --from=tinypdf-ops /usr/lib/libICE.so.6 /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/libSM.so* /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/libICE.so* /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libxcb.so.1 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libzstd.so.1 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libwebp.so.7 /usr/lib/
@@ -97,23 +99,23 @@ COPY --from=tinypdf-ops /usr/lib/libgnutls.so.30 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libexpat.so.1 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libbz2.so.1 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libbrotlidec.so.1 /usr/lib/
-COPY --from=tinypdf-ops /usr/lib/libuuid.so.1 /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/libuuid.so* /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libXau.so.6 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libXdmcp.so.6 /usr/lib/
-COPY --from=tinypdf-ops /usr/lib/libsharpyuv.so.0 /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/libsharpyuv.so* /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libintl.so.8 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libdbus-1.so.3 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libp11-kit.so.0 /usr/lib/
-COPY --from=tinypdf-ops /usr/lib/libidn2.so.0 /usr/lib/
-COPY --from=tinypdf-ops /usr/lib/libunistring.so.5 /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/libidn2.so* /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/libunistring.so* /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libtasn1.so.6 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libhogweed.so.6 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libnettle.so.8 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libgmp.so.10 /usr/lib/
 COPY --from=tinypdf-ops /usr/lib/libbrotlicommon.so.1 /usr/lib/
-COPY --from=tinypdf-ops /usr/lib/libbsd.so.0 /usr/lib/
-COPY --from=tinypdf-ops /usr/lib/libffi.so.8 /usr/lib/
-COPY --from=tinypdf-ops /usr/lib/libmd.so.0 /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/libbsd.so* /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/libffi.so* /usr/lib/
+COPY --from=tinypdf-ops /usr/lib/libmd.so* /usr/lib/
 
 WORKDIR /app
 
