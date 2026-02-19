@@ -4,19 +4,26 @@ Reduce PDF file size
 
 ## What is this?
 
-`tinypdf` is a utility that acts as a wrapper (or orchestrator) around multiple PDF manipulation tools, using _okayish_ configurations to reduce PDF file size.
+`tinypdf` is am _experimental_ utility that acts as a wrapper (or orchestrator) around multiple PDF manipulation tools, using _okayish_ configurations to reduce PDF file size.
 
 ## Why?
 
-- I wasn't really comfortable uploading sensitive files on web-server based PDF compression tools. Existing GUI based tools on my system resulted in unsatisfactory results (I was [greedy](https://x.com/bhupeshimself/status/1941499700802355317), since I wanted to reduce a file from 19MB to less than 1.5MB).
+- I wasn't really comfortable uploading sensitive files on web-server based PDF compression tools. Existing GUI based tools resulted in unsatisfactory results (I was [greedy](https://x.com/bhupeshimself/status/1941499700802355317), since I wanted to reduce a file from 19MB to less than 1.5MB).
 - I seem to have a weird liking for doing this [kind](https://bhupesh.me/publishing-my-first-ever-dockerfile-optimization-ugit/) of [stuff](https://bhupesh.me/minimalist-guide-git-clone/).
 
 ## Installation
 
+Build the image.
+
+```
+make docker
+```
+
+Run a container
+
 ```bash
-# TODO
-# Pull the Image first: docker pull bhupeshimself/tinypdf
-docker run --rm -v $(pwd):/app bhupeshimself/tinypdf
+# TODO Publish Image: docker pull bhupeshimself/tinypdf
+docker run --rm -v $(pwd):/app bhupeshimself/tinypdf:latest
 ```
 
 If everything goes good, you should see a welcome text like this
@@ -53,7 +60,7 @@ Follow the instructions shared on `tinypdf --help`
 Sample run
 
 ```
-docker run --rm -v $(pwd):/app tinypdf:latest -i board_certificate.pdf -preset ebook -quality 88
+docker run --rm -v $(pwd):/app bhupeshimself/tinypdf:latest -i board_certificate.pdf -preset ebook -quality 88
 ```
 
 Sample output:
